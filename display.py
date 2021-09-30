@@ -2,6 +2,7 @@ import smartlog;
 import toolbelt;
 import configparser;
 log = smartlog.Smartlog();
+format_ = format
 
 
 configs = {};
