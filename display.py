@@ -1,4 +1,5 @@
 import smartlog;
+import os;
 import toolbelt;
 import configparser;
 log = smartlog.Smartlog();
@@ -7,7 +8,7 @@ format_ = format
 
 configs = {};
 configs['main'] = configparser.ConfigParser()
-configs['main'].read('/home/dominic/.config/notebook/notebook.cfg')
+configs['main'].read(os.path.expanduser('~')+'/.config/notebook/notebook.cfg')
 QuickDate = toolbelt.quickdate.QuickDate;
 
 

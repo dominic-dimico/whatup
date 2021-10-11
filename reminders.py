@@ -42,7 +42,7 @@ def do_client(rem):
 def do_notify(rem):
     if rem['how']=='desktop':
          notification.notify(rem['about'], rem['what'], timeout=7200);
-         playsound('/home/dominic/.smartlog/info.wav')
+         playsound(os.path.expanduser('~')+'/.smartlog/info.wav')
          return [];
     data = do_client(rem);
     if not data: return [];
@@ -68,7 +68,7 @@ def do_notify(rem):
 
 def quickdates():
     now   = QuickDate('now');
-    day   = QuickDate('tomorrow');
+    day   = QuickDate('24 hours');
     soon  = QuickDate('11 minutes');
     return (now, day, soon);
     
@@ -82,7 +82,7 @@ def update_next(rem, withwhat):
 
 
 def update_reminders(args):
-    data  = remi.query("select who,how,time,often,about,what,next from reminder where next >= NOW()");
+    data  = remi.query("select id,who,how,time,often,about,what,next from reminder where next >= NOW()");
     data = list(data);
     rems  = []
     texts = []
@@ -92,6 +92,9 @@ def update_reminders(args):
         t = QuickDate(data[i]['time']);
         n = QuickDate();
         n.setbydt(data[i]['next']);
+        #print((n.lex, now.lex, soon.lex, day.lex))
+        #update_next(data[i], t.lex);
+        #print((now.lex, n.lex, soon.lex, day.lex, n>now, n<soon, n<day))
         if n > now and n < day:
            rems += [data[i]];
            if n < soon: 
@@ -99,6 +102,7 @@ def update_reminders(args):
               texts += do_notify(rems[j]);
            j = j + 1;
     if texts: do_texts(texts);
+    #print(rems);
     args['queue'].put({
        'reminders' : sorted(rems, 
        key=lambda x: x['next'])
@@ -111,7 +115,7 @@ def print_reminders(args):
     r = "{:<10} {:<10} {:<10} {:<20} {:<20} {:<40}\n".format(
       'who', 'how', 'about', 'time', 'next', 'what',
     )
-    log.write(log.incolor('purple', r));
+    log.write(log.oncolor('purple', r));
     x = len(args['reminders']);
     x = 5 if x>5 else x;
     for i in range(x):
@@ -121,7 +125,7 @@ def print_reminders(args):
             str(reminder['about'])[:10], str(reminder['time'])[:20],
             str(reminder['next'])[:20],  str(reminder['what'])[:40],
         )
-        log.write(log.incolor('green', r));
+        log.write(log.oncolor('green', r));
     return args;
 
 
@@ -134,7 +138,9 @@ def update_todos(args):
     j = 0;
     for i in range(len(data)):
         r = QuickDate(data[i]['remind']);
+        #print((now.lex, r.lex, soon.lex, day.lex, r>now, r<soon, r<day))
         if r > now and r < day:
+           #print(data[i]);
            todos += [data[i]];
            todos[j]['time'] = r.lex;
            j = j + 1;
@@ -142,6 +148,7 @@ def update_todos(args):
            notification.notify(
              data[i]['category'] + '/'  + data[i]['subject'], 
              data[i]['remind']   + ': ' + data[i]['quicknote']);
+    #print(todos);
     args['queue'].put({
        'todos' : sorted(todos, 
        key=lambda x: x['time'])
@@ -154,7 +161,7 @@ def print_todos(args):
     r = "{:<10} {:<10} {:<10} {:<20} {:<20} {:<40}\n".format(
       'author', 'category', 'subject', 'remind', 'time', 'quicknote',
     )
-    log.write(log.incolor('purple', r));
+    log.write(log.oncolor('purple', r));
     x = len(args['todos']);
     x = 5 if x>5 else x;
     for i in range(x):
@@ -167,7 +174,7 @@ def print_todos(args):
             str(reminder['time'])[:20],
             str(reminder['quicknote'])[:40],
         )
-        log.write(log.incolor(reminder['color'], r));
+        log.write(log.oncolor(reminder['color'], r));
     log.write('\n');
     return args;
 
